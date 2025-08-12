@@ -45,69 +45,65 @@ and combine afterward.
 
 ### Full pipeline
 Discovers ZIPs → extracts → parses with KAPE → auto-combines (if >1 server).
-```powershell`
-powershell -NoProfile -ExecutionPolicy Bypass -File "C:\Scripts\VelociKAPE-Pro.ps1" `
+```powershell -NoProfile -ExecutionPolicy Bypass -File "C:\Scripts\VelociKAPE-Pro.ps1" `
 -KapePath "C:\Tools\KAPE\kape.exe" `
 -CollectionPath "C:\Collection" `
--ExportPath "C:\Export" -OutputPath "C:\Output" -CombinedPath "C:\Combined"
+-ExportPath "C:\Export" -OutputPath "C:\Output" -CombinedPath "C:\Combined"`
 
 ### Parse-only (skip extraction)
 
-powershell -NoProfile -ExecutionPolicy Bypass -File "C:\Scripts\VelociKAPE-Pro.ps1" `
+```powershell -NoProfile -ExecutionPolicy Bypass -File "C:\Scripts\VelociKAPE-Pro.ps1" `
   -KapePath "C:\Tools\KAPE\kape.exe" -SkipExtract `
   -ExportPath "C:\Export" -OutputPath "C:\Output" -CombinedPath "C:\Combined" `
-  -Combine:$false
+  -Combine:$false`
 
-Combine-only (later)
-powershell -NoProfile -ExecutionPolicy Bypass -File "C:\Scripts\VelociKAPE-Pro.ps1" `
-  -OutputPath "C:\Output" -CombinedPath "C:\Combined" -CombineOnly
+### Combine-only (later)
+```powershell -NoProfile -ExecutionPolicy Bypass -File "C:\Scripts\VelociKAPE-Pro.ps1" `
+  -OutputPath "C:\Output" -CombinedPath "C:\Combined" -CombineOnly`
 
-Parallel servers (PS7 recommended)
+### Parallel servers (PS7 recommended)
 
-pwsh -NoProfile -ExecutionPolicy Bypass -File "C:\Scripts\VelociKAPE-Pro.ps1" `
+```pwsh -NoProfile -ExecutionPolicy Bypass -File "C:\Scripts\VelociKAPE-Pro.ps1" `
   -KapePath "C:\Tools\KAPE\kape.exe" -CollectionPath "C:\Collection" `
   -ExportPath "C:\Export" -OutputPath "C:\Output" -CombinedPath "C:\Combined" `
   -Parallel 3
 
-Run only SigCheck later (incremental)
-powershell -NoProfile -ExecutionPolicy Bypass -File "C:\Scripts\VelociKAPE-Pro.ps1" `
+### Run only SigCheck later (incremental)
+```powershell -NoProfile -ExecutionPolicy Bypass -File "C:\Scripts\VelociKAPE-Pro.ps1" `
   -KapePath "C:\Tools\KAPE\kape.exe" -SkipExtract `
   -ExportPath "C:\Export" -OutputPath "C:\Output" -CombinedPath "C:\Combined" `
   -Modules "SysInternals_SigCheck"
 powershell -NoProfile -ExecutionPolicy Bypass -File "C:\Scripts\VelociKAPE-Pro.ps1" `
   -OutputPath "C:\Output" -CombinedPath "C:\Combined" -CombineOnly
 
-Target specific servers
-powershell -NoProfile -ExecutionPolicy Bypass -File "C:\Scripts\VelociKAPE-Pro.ps1" `
+### Target specific servers
+```powershell -NoProfile -ExecutionPolicy Bypass -File "C:\Scripts\VelociKAPE-Pro.ps1" `
   -KapePath "C:\Tools\KAPE\kape.exe" -CollectionPath "C:\Collection" `
   -ExportPath "C:\Export" -OutputPath "C:\Output" -CombinedPath "C:\Combined" `
   -Servers "DC01","WEB03"
 
-Resume / Force re-parse / Pruning
+### Resume / Force re-parse / Pruning
 -Resume → skip servers already parsed for this module set (per-server marker files).
-
 -ForceReparse → ignore markers and re-run anyway.
-
 -PruneOutput → delete existing CSVs in each server’s output folder before parsing.
-
 -PruneCombined → delete existing combined_*.csv before combine.
 
-Module Profiles (Pro script)
-Use -ModulesProfile instead of -Modules to pick from baked-in sets:
+## Module Profiles (Pro script)
+`Use -ModulesProfile instead of -Modules to pick from baked-in sets:`
 
-Triage (default)
+### Triage (default)
 !EZParser,BMC-Tools_RDPBitmapCacheParser,BitsParser,Hayabusa,WMI-Parser,LogParser,RECmd_AllBatchFiles,PowerShell_ParseScheduledTasks
 
-Full
+### Full
 Triage + EvtxECmd + LECmd (heavier; adjust to taste)
 
-SignatureOnly
+### SignatureOnly
 SysInternals_SigCheck
 
 You can still override anytime with -Modules or -ModuleListFile.
 
 
-Output & Combining
+## Output & Combining
 Per server: C:\Output\<Server>\YYYYMMDDhhmmss_Artifact_Output.csv
 
 Combined: C:\Combined\combined_<Artifact>.csv
@@ -119,7 +115,7 @@ ServerName (folder name under Output)
 
 SourcePath (original per-server CSV)
 
-Performance Tips
+## Performance Tips
 Keep KAPE, Export, Output, Combined on the same SSD.
 
 Use PowerShell 7 and -Parallel for multi-host speed-ups.
@@ -128,10 +124,10 @@ SkipExtract when you already have exports—unzipping is often the slowest step.
 
 Exclude paths from AV (and kape.exe) to avoid scanning overhead/quarantines.
 
-Analysis Tips
+## Analysis Tips
 Open combined_*.csv in Timeline Explorer (Eric Zimmerman) for fast filtering & pivots by time, host, and artifact.
 
 Filter by ServerName, ImagePath, CommandLine, User, etc., then export filtered CSVs for sharing.
 
-License
+## License
 MIT — use at your own risk. Contributions welcome
