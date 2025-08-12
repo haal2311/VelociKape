@@ -57,9 +57,9 @@ Use this if you already extracted the collections to per-server folders under `C
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File "C:\Scripts\VelociKAPE-Pro.ps1" `
-  -KapePath "C:\Tools\KAPE\kape.exe" -SkipExtract `
+  -KapePath "C:\Tools\KAPE\kape.exe" -SkipExtract:$true `
   -ExportPath "C:\Export" -OutputPath "C:\Output" -CombinedPath "C:\Combined" `
-  -Combine:$false
+  -Combine:$false -DryRun:$true
 ```
 
 ### Combine-only (Later/after parsing completes)
@@ -69,7 +69,7 @@ Build `combined_*.csv` from existing per-server outputs.
 powershell -NoProfile -ExecutionPolicy Bypass -File "C:\Scripts\VelociKAPE-Pro.ps1" `
   -OutputPath "C:\Output" `
   -CombinedPath "C:\Combined" `
-  -CombineOnly
+  -CombineOnly:$true
 ```
 
 ### Parallel servers (fast on PS7+)
@@ -98,13 +98,13 @@ Recommended after the main modules finish.
 ```powershell
 # Parse only with SigCheck
 powershell -NoProfile -ExecutionPolicy Bypass -File "C:\Scripts\VelociKAPE-Pro.ps1" `
-  -KapePath "C:\Tools\KAPE\kape.exe" -SkipExtract `
+  -KapePath "C:\Tools\KAPE\kape.exe" -SkipExtract:$true `
   -ExportPath "C:\Export" -OutputPath "C:\Output" -CombinedPath "C:\Combined" `
   -Modules "SysInternals_SigCheck"
 
 # Combine afterwards
 powershell -NoProfile -ExecutionPolicy Bypass -File "C:\Scripts\VelociKAPE-Pro.ps1" `
-  -OutputPath "C:\Output" -CombinedPath "C:\Combined" -CombineOnly
+  -OutputPath "C:\Output" -CombinedPath "C:\Combined" -CombineOnly:$true
 ```
 
 ---
@@ -124,23 +124,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File "C:\Scripts\Mass-VelociKAPE.
 ### Combine-only
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File "C:\Scripts\Mass-VelociKAPE.ps1" `
-  -OutputPath "C:\Output" -CombinedPath "C:\Combined" -CombineOnly
+  -OutputPath "C:\Output" -CombinedPath "C:\Combined" -CombineOnly:$true
 ```
-
----
-
-## Module Profiles (Pro script)
-
-Use `-ModulesProfile` to pick pre-defined sets (you can still override with `-Modules` or `-ModuleListFile`).
-
-- **Triage (default)**  
-  `!EZParser,BMC-Tools_RDPBitmapCacheParser,BitsParser,Hayabusa,WMI-Parser,LogParser,RECmd_AllBatchFiles,PowerShell_ParseScheduledTasks`
-
-- **Full**  
-  `Triage + EvtxECmd + LECmd` (heavier; adjust if needed)
-
-- **SignatureOnly**  
-  `SysInternals_SigCheck` (recommended as a second pass)
 
 ---
 
@@ -150,7 +135,7 @@ Use `-ModulesProfile` to pick pre-defined sets (you can still override with `-Mo
 - Combined outputs look like: `C:\Combined\combined_<Artifact>.csv`
 
 **Normalization rules** (so you get one file per artifact):
-- Leading timestamps like `20250811153133_` are ignored
+- Leading timestamps like `20250811153133_` or `2025-08-11T10_24_42Z_` are ignored
 - A trailing `_Output` suffix is stripped
 - Each row is tagged with **ServerName** and **SourcePath**
 
@@ -163,7 +148,7 @@ Examples of single combined files created:
 
 ---
 
-## Resume, Prune & Re-Runs (Pro & Mass)
+## Resume, Prune & Re-Runs
 
 - `-Resume` — skip servers already parsed for the **same module set** (per-server marker files).
 - `-ForceReparse` — ignore markers; re-run anyway.
@@ -177,12 +162,12 @@ Examples of single combined files created:
 
 ## Best Practices (DFIR at scale)
 
-- **Skip extraction** (`-SkipExtract`) when you already have exports — unzipping is usually the slowest step.
+- **Skip extraction** (`-SkipExtract:$true`) when you already have exports — unzipping is usually the slowest step.
 - Use **PowerShell 7** and `-Parallel` (2–3 to start); monitor disk/CPU/AV.
 - Put **KAPE, Export, Output, Combined** on the **same SSD**.
 - Add **AV exclusions** for these paths and `kape.exe`.
 - **Run SigCheck last** (separate pass). It’s **CPU/IO-heavy** and can slow the main pipeline.
-- Combine **after** multiple servers finish (or run `-CombineOnly` at the end).
+- Combine **after** multiple servers finish (or run `-CombineOnly:$true` at the end).
 - Use **Timeline Explorer (Eric Zimmerman)** to quickly filter and pivot the large `combined_*.csv` results by `ServerName`, `ImagePath`, `CommandLine`, timestamps, etc.
 
 ---
@@ -195,7 +180,7 @@ Examples of single combined files created:
   ```
 - **ZIP names don’t match pattern:** Ensure `Collection-<Server>-YYYY-MM-DDThh_mm_ssZ.zip`.
 - **No results combined:** Confirm per-server CSVs exist and are **not** under `\raw\` subfolders (these are ignored).
-- **Slow parsing:** Add AV exclusions; use `-SkipExtract`; enable `-Parallel` on PS7; run SigCheck later.
+- **Slow parsing:** Add AV exclusions; use `-SkipExtract:$true`; enable `-Parallel` on PS7; run SigCheck later.
 
 ---
 
