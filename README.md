@@ -45,11 +45,11 @@ and combine afterward.
 
 ### Full pipeline
 Discovers ZIPs → extracts → parses with KAPE → auto-combines (if >1 server).
-```powershell
+```powershell`
 powershell -NoProfile -ExecutionPolicy Bypass -File "C:\Scripts\VelociKAPE-Pro.ps1" `
 -KapePath "C:\Tools\KAPE\kape.exe" `
 -CollectionPath "C:\Collection" `
--ExportPath "C:\Export" -OutputPath "C:\Output" -CombinedPath "C:\Combined" ```
+-ExportPath "C:\Export" -OutputPath "C:\Output" -CombinedPath "C:\Combined"
 
 ### Parse-only (skip extraction)
 
