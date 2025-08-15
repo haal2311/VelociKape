@@ -1,166 +1,156 @@
-# VelociKAPE-Pro & Mass-VelociKAPE
+# VelociKAPE Toolkit
 
-PowerShell automation for DFIR analysts using [KAPE](https://www.kroll.com/en/insights/publications/cyber/kroll-artifact-parser-extractor-kape) to:
-- Parse collected forensic artifacts at scale (single or multiple servers)
-- Automate extraction → parsing → CSV export → combined analysis
-- Handle custom modules, profiles, and batch parsing
-- Reduce repetitive DFIR processing steps
+## Overview
+The **VelociKAPE Toolkit** is a set of PowerShell automation scripts designed for Digital Forensics & Incident Response (DFIR) workflows using [KAPE](https://www.kroll.com/en/services/cyber-risk/incident-response-litigation-support/kroll-artifact-parser-extractor-kape).  
+It simplifies **collection, parsing, and aggregation** of forensic artifacts across multiple systems.
 
-This toolkit contains:
-1. **VelociKAPE-Pro.ps1** – Flexible parsing pipeline for single/multi-host exports
-2. **Mass-VelociKAPE.ps1** – Bulk orchestration across many servers
+Two scripts are included:
+1. **VelociKAPE-Basic.ps1** – Single-server collection and parsing.
+2. **VelociKAPE-Pro.ps1** – Multi-server automation with advanced features.
 
 ---
 
-## 🛠 Setup
-
-1. Install **KAPE**:
-   - Download from: https://www.kroll.com/en/insights/publications/cyber/kroll-artifact-parser-extractor-kape
-   - Place in `C:\Tools\KAPE` (or your preferred directory)
-
-2. Ensure PowerShell execution policy allows script execution:
-   ```powershell
-   Set-ExecutionPolicy Bypass -Scope Process -Force
-   ```
-
-3. Clone or download this repo containing:
-   - `VelociKAPE-Pro.ps1`
-   - `Mass-VelociKAPE.ps1`
-   - This README
-
-4. Prepare your input folders:
-   - **ExportPath**: Directory where collected artifacts are stored (`serverX\uploads`)
-   - **OutputPath**: Per-server parsed CSV outputs
-   - **CombinedPath**: Optional merged CSVs for multi-host analysis
+## Features
+- **Automated ZIP discovery & extraction** (Basic + Pro).
+- **Direct parsing from existing exports** (skip extraction).
+- **Multi-server processing with auto-combination of results** (Pro).
+- **Modular parsing** – Specify KAPE module sets.
+- **Dry-run mode** – Preview commands before execution.
+- **Customizable output paths**.
+- **Server list support** – Process only specific hosts.
+- **Combine control** – Enable or disable merged output.
 
 ---
 
-## ⚙ Default Modules
+## Quick Start
 
-- Default module list **excludes** `SysInternals_SigCheck` for performance reasons.
-- `SysInternals_SigCheck` should be run **last**, after initial parsing is complete, due to high CPU and I/O overhead.
-- Use `-Modules` to specify your own list or add `SysInternals_SigCheck` later.
+### Basic Script
+Run full pipeline on a single system:
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File "C:\Scripts\VelociKAPE-Basic.ps1" `
+-CollectionPath "C:\Collection" `
+-ExportPath "C:\Export" `
+-OutputPath "C:\Output"
+```
+
+Parse only (skip extraction):
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File "C:\Scripts\VelociKAPE-Basic.ps1" `
+-SkipExtract `
+-ExportPath "C:\Export" `
+-OutputPath "C:\Output"
+```
 
 ---
 
-## 🚀 Quick Start Examples
+### Pro Script – Multi-Server
 
-### 1. Full Parse (Extraction + Parsing)
+Full pipeline:
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File "C:\Scripts\VelociKAPE-Pro.ps1" `
+-KapePath "C:\Tools\KAPE\kape.exe" `
+-CollectionPath "C:\Collection" `
+-ExportPath "C:\Export" `
+-OutputPath "C:\Output" `
+-CombinedPath "C:\Combined"
+```
+
+Parse-only (skip extraction):
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File "C:\Scripts\VelociKAPE-Pro.ps1" `
+-KapePath "C:\Tools\KAPE\kape.exe" `
+-SkipExtract `
+-ExportPath "C:\Export" `
+-OutputPath "C:\Output" `
+-CombinedPath "C:\Combined"
+```
+
+Dry-run (no execution, preview commands):
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File "C:\Scripts\VelociKAPE-Pro.ps1" `
+-KapePath "C:\Tools\KAPE\kape.exe" `
+-ExportPath "C:\Export" `
+-OutputPath "C:\Output" `
+-CombinedPath "C:\Combined" `
+-DryRun
+```
+
+---
+
+## Advanced Usage
+
+### Specify Servers to Process
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File "VelociKAPE-Pro.ps1" `
-  -KapePath "C:\Tools\KAPE\kape.exe" `
-  -CollectionPath "C:\Collection" `
-  -ExportPath "C:\Export" `
-  -OutputPath "C:\Output" `
-  -CombinedPath "C:\Combined"
+-KapePath "C:\Tools\KAPE\kape.exe" `
+-ExportPath "C:\Export" `
+-OutputPath "C:\Output" `
+-CombinedPath "C:\Combined" `
+-Servers @("DC01", "WEB01")
 ```
 
-### 2. Parse Only (Skip Extraction)
+### Disable Combination of Outputs
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File "VelociKAPE-Pro.ps1" `
-  -KapePath "C:\Tools\KAPE\kape.exe" `
-  -SkipExtract `
-  -ExportPath "C:\Export" `
-  -OutputPath "C:\Output" `
-  -CombinedPath "C:\Combined"
+-KapePath "C:\Tools\KAPE\kape.exe" `
+-ExportPath "C:\Export" `
+-OutputPath "C:\Output" `
+-CombinedPath "C:\Combined" `
+-Combine:$false
 ```
 
-### 3. Dry Run (Show commands without executing)
+### Enable Combination of Outputs (Default)
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File "VelociKAPE-Pro.ps1" `
-  -KapePath "C:\Tools\KAPE\kape.exe" `
-  -SkipExtract `
-  -ExportPath "C:\Export" `
-  -OutputPath "C:\Output" `
-  -DryRun
+-KapePath "C:\Tools\KAPE\kape.exe" `
+-ExportPath "C:\Export" `
+-OutputPath "C:\Output" `
+-CombinedPath "C:\Combined" `
+-Combine:$true
 ```
 
-### 4. Run with Custom Modules
+### Run with Custom KAPE Modules
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File "VelociKAPE-Pro.ps1" `
-  -KapePath "C:\Tools\KAPE\kape.exe" `
-  -SkipExtract `
-  -ExportPath "C:\Export" `
-  -OutputPath "C:\Output" `
-  -Modules "!EZParser,MyCustomModule"
-```
-
-### 5. Add Heavy Module Later (SigCheck)
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File "VelociKAPE-Pro.ps1" `
-  -KapePath "C:\Tools\KAPE\kape.exe" `
-  -SkipExtract `
-  -ExportPath "C:\Export" `
-  -OutputPath "C:\Output" `
-  -Modules "SysInternals_SigCheck"
-```
-
-### 6. Mass Parsing Across Many Servers
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File "Mass-VelociKAPE.ps1" `
-  -ServerList "servers.txt" `
-  -KapePath "C:\Tools\KAPE\kape.exe" `
-  -ExportBase "C:\Export" `
-  -OutputBase "C:\Output"
+-KapePath "C:\Tools\KAPE\kape.exe" `
+-ExportPath "C:\Export" `
+-OutputPath "C:\Output" `
+-Modules "LECmd,MFTECmd" `
+-CombinedPath "C:\Combined"
 ```
 
 ---
 
-## 🧠 DFIR Workflow Scenarios
+## Common DFIR Scenarios
 
-### Scenario A: Live Incident Triage
-- Run with default profile excluding `SigCheck`
-- Output goes to per-host folders
-- Combine results for cross-host correlation
+### 1. Ransomware Incident – Triage
+- Run Pro script with predefined triage modules.
+- Skip extraction if you already have raw exports.
+- Combine outputs for faster analysis.
 
-### Scenario B: Post-Incident Deep Dive
-- Rerun only `SysInternals_SigCheck` on already parsed servers
-- Merge into existing combined CSV
-- Use [Timeline Explorer](https://ericzimmerman.github.io/) for pivoting
+### 2. Insider Threat Investigation
+- Limit processing to suspect’s workstation(s).
+- Use targeted modules (browser history, USB device logs).
+- Disable combining if each analyst should get separate datasets.
 
-### Scenario C: IOC Hunting
-1. Run `VelociKAPE-Pro.ps1` to generate combined CSV
-2. Open in Timeline Explorer
-3. Filter by:
-   - File names
-   - Hash matches
-   - Registry key patterns
-   - Command-line arguments
-4. Export hits for reporting
+### 3. Compliance Data Collection
+- Run across all servers.
+- Use a compliance-specific module set.
+- Store combined results in an audit folder.
 
-### Scenario D: Custom Artifact Modules
-- Build `.tkape` targeting your org’s log locations
-- Pass it to `-Modules` for targeted parsing
+### 4. Large Environment Parsing
+- Use `-Servers` to batch process in subsets.
+- Run multiple instances of the script in parallel on different sets.
 
 ---
 
-## ⚡ Performance Tips
-
-- Run from SSD for speed
-- Avoid network shares for OutputPath when possible
-- Exclude heavy modules until final pass
-- Use `-DryRun` to validate before long jobs
-- Run in parallel (Mass-VelociKAPE) for large-scale IR
+## Recommendations
+- Always **dry-run** in large environments before executing live to confirm targets.
+- Keep **KAPE** updated for the latest parsing modules.
+- Store combined CSVs in a central location for easy ingestion into ELK/Splunk.
+- Validate **path structures** (ensure `uploads` directories match your export layout).
 
 ---
 
-## 🛠 Troubleshooting
-
-| Issue | Cause | Fix |
-|-------|-------|-----|
-| **`Cannot convert value "System.String" to type "System.Boolean"`** | Incorrect Boolean syntax | Use `-Param:$true` or `-Param:$false` |
-| **No output generated** | Wrong `ExportPath` structure | Ensure `serverX\uploads` exists |
-| **KAPE not found** | Wrong `-KapePath` | Point to `kape.exe` directly |
-| **Slow parsing** | Heavy modules or HDD | Remove `SysInternals_SigCheck`, use SSD |
-
----
-
-## 📌 Notes
-- **SysInternals_SigCheck**: Expensive, run last.
-- **Timeline Explorer**: Highly recommended for browsing combined CSVs.
-- Ensure **`-ExportPath`** matches your KAPE export structure exactly.
-
----
-
-## 📄 License
-MIT License
+## License
+This project is distributed under the MIT License.
